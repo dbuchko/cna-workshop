@@ -30,8 +30,8 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	public Account saveOrUpdate(Account account) {
-		accountRepository.save(account);
-		return null;
+		Account savedAccount = accountRepository.save(account);
+		return savedAccount;
 	}
 
 	@Override
