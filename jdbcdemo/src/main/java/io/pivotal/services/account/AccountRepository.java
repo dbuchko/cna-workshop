@@ -48,10 +48,11 @@ public class AccountRepository {
 	}
 	
 	Account save(Account account) {
-		assert account.getId() != null;
 		assert account.getType() != null;
 		assert account.getStatus() != null;
 
+		account.setId(java.util.UUID.randomUUID().getLeastSignificantBits());
+		
         this.jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(SQL_INSERT);
             ps.setLong(1, account.getId().longValue());
