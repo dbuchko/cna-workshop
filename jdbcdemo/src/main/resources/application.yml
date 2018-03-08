@@ -1,0 +1,23 @@
+logging:
+  level:
+    root: info 
+
+---
+spring:
+  profiles: dev
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/sampledb?useSSL=false
+    username: test
+    password: password
+---
+
+spring:
+  profiles: test
+  datasource:
+    driver-class-name: com.ibm.db2.jcc.DB2Driver
+    url: jdbc:db2://localhost:50000/sample
+    username: db2inst1
+    password: password
+    
+  
