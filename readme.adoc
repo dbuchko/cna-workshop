@@ -1,22 +1,109 @@
-= Pivotal Cloud Native Workshop
+= Pivotal Spring Data Demos
 
-The purpose of this workshop is to demonstrate Spring Boot, and use Spring JDBC to connect to a database.
+The purpose of this workshop is to demonstrate Spring Boot, and compare Spring JPA with Spring JDBC to connect to an existing database when deployed to Cloud Foundry.
 
+== Spring JDBC
 
-== Agenda
+This application will use the Spring Data JDBC Template to demonstrate accessing an external database from a Spring Boot application running first locally, then on Pivotal Cloud Foundry.
 
-. https://docs.google.com/presentation/d/1utTen6vc2Y7I4HOyLHyYzu1SCdTKG9dk4sjC-kPMHno/edit#slide=id.g33044e0856_1_981[Cloud Native Platform overview]  (Start with PAS section...)
+Source code for this demo application can be found in the https://github.com/dbuchko/cna-workshop/blob/master/jdbcdemo[`jdbcdemo`] directory.
 
-.. `cf push` https://github.com/eitansuez/articulate[articulate] application.
+When deployed locally and not specifying any profile, the app will by default use an H2 in-memory database.  Other profiles have been set up to access MySQL and DB2 databases.  When the app is deployed to PCF you can create a user-provided service to connect to an external database.
 
-.. App Manager overview
+=== Deploying and Running the Demo Locally
 
-.. CF CLI overview
+. In a terminal window, change to the https://github.com/dbuchko/cna-workshop/tree/master/jdbcdemo[`jdbcdemo`] directory, build, package, and run the application:
 
-.. App logs
++
+[source,bash]
+----
+mvn clean package spring-boot:run
+----
 
-.. App scaling
+. To use the service to insert data, you can use an application like https://www.getpostman.com/apps[Postman], or if you have `curl` installed, execute
 
-. https://docs.google.com/presentation/d/1prWJUbXRpbtMQJoImSpd8Lo_zE7maTWXOtcVyLTfRDQ/edit#slide=id.g2f4f69e152_1_168[Cloud Native Development] with Spring Boot.
++
+[source,bash]
+----
+curl -X POST -H "Content-Type: application/json" -d '{"type":"Chequing","status":"Active","balance":"777"}' http://localhost:8080/account
+----
 
-.. https://github.com/dbuchko/cna-workshop/tree/master/labs/cloud-native-development[Demo]
+. Retrieve a list of accounts:
++
+[source,bash]
+----
+curl -X GET -H "Content-Type: application/json" http://localhost:8080/accounts
+----
+
+. Delete an account:
+
++
+[source,bash]
+----
+curl -X DELETE -H "Content-Type: application/json" http://localhost:8080/account/6367736797661010002
+----
+
+==== Connecting to a Local MySQL Database
+
+. Download and install a local instance of MySQL.  By default, a `test` schema is created.  Update the MySQL username and password as necessary in the https://github.com/dbuchko/cna-workshop/blob/master/jdbcdemo/src/main/resources/application.yml[`jdbcdemo/src/main/resources/application.yml`] file.
+
+. Run the application again using the `dev` profile to connect to the local MySQL instance:
+
++
+[source,bash]
+----
+mvn clean package spring-boot:run -Dspring.profiles.active=dev
+----
+
+==== Connecting to a Local DB2 Database
+
+. Download and install a local instance of DB2.  Create a `sample` schema.  Update the DB2 username and password as necessary in the https://github.com/dbuchko/cna-workshop/blob/master/jdbcdemo/src/main/resources/application.yml[`jdbcdemo/src/main/resources/application.yml`] file.
+
+. Run the application again using the `test` profile to connect to the local MySQL instance:
+
++
+[source,bash]
+----
+mvn clean package spring-boot:run -Dspring.profiles.active=test
+----
+
+=== Deploying the Demo to Pivotal Cloud Foundry (PCF)
+
+. Log into your PCF instance, and verify your Org and Space by running the `cf target` command.
+
+. Create a user-provided service JSON configuration file with the following content, substituting your own values for each `DB2_` parameter:
+
++
+.config.json
+[source,json]
+----
+{
+     "hostname": "DB2_HOST",
+     "jdbcUrl": "jdbc:db2://DB2_HOST/DB2_SCHEMA?user=DB2_USER\u0026password=DB2_PASSWORD",
+     "name": "DB2_SCHEMA",
+     "password": "DB2_PASSWORD",
+     "port": "DB2_PORT",
+     "uri": "db2://DB2_HOST:DB2_PORT/DB2_SCHEMA?reconnect=true",
+     "username": "DB2_USER"
+}
+----
+
+. Create the user-provided service in PCF:
+
++
+----
+cf cups jdbcdemo-db -p config.json
+----
+
+. Examine the https://github.com/dbuchko/cna-workshop/blob/master/jdbcdemo/src/main/resources/application.yml[`manifest.yml`] file, note that it will automatically bind to the service.  Deploy your application from the `jdbcdemo` root directory:
+
++
+[source,bash]
+----
+cf push
+----
+
++
+Spring will automatically look for the credentials and connect to the external DB2 instance specified when you created the user provided service.
+
+. Test the application using the same `curl` commands (or Postman) used for the local deployment above, just changing the app URL endpoint to match your application route.
