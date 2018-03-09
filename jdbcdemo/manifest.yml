@@ -4,3 +4,6 @@ applications:
   memory: 768M
   path: ./target/jdbcdemo-0.0.1-SNAPSHOT.jar
   host: jdbcdemo-dlb
+  services:
+  - jdbcdemo-db
+  
