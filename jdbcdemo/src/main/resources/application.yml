@@ -2,6 +2,10 @@ logging:
   level:
     root: info 
 
+spring:
+  datasource:
+    continue-on-error: true   # The script will throw an exception if the table exists, so suppress the error
+    
 ---
 spring:
   profiles: dev
