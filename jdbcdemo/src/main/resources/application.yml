@@ -1,3 +1,7 @@
+username: admin
+password: secret
+role: user
+
 logging:
   level:
     root: info 
