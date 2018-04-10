@@ -4,8 +4,8 @@ import java.util.List;
 
 public interface AccountService {
 
-		List<Account> listAll();
-		Account getById(Long id);
-		Account saveOrUpdate(Account account);
-		void delete(Long id);
+	public List<Account> listAll();
+	public Account getById(Long id);
+	public Account saveOrUpdate(Account account);
+	public void delete(Long id);
 }
